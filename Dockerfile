@@ -2,7 +2,7 @@
 # Pinned by digest; the tag is what Dependabot (docker, .github/dependabot.yml) tracks.
 # Digest from tag 1.0.0 = sha-664ba33 (rmorie-bricklayer 664ba33a, the 1.0.0 CRAN resubmission build), 2026-10-21.
 # To bump by hand: skopeo inspect --format '{{.Digest}}' docker://ghcr.io/rootcoder007/rmorie-bricklayer:1.0.0
-FROM ghcr.io/rootcoder007/rmorie-bricklayer:1.0.0@sha256:92fa3dfa19a7c89359bf1481378005cf05d072fdfbfdd905ee978e75148c7d10
+FROM ghcr.io/rootcoder007/rmorie-bricklayer:1.0.0@sha256:cbc8153ab55d71d723914ac841efbac31480a3c2ae9a08dbc9d8e1ab94a97e6d
 
 COPY entrypoint.sh check.R /rmbl/
 COPY spec /rmbl/spec
