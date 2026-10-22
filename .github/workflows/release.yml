@@ -23,6 +23,9 @@ concurrency:
 jobs:
   test:
     uses: ./.github/workflows/test.yml
+    permissions:
+      contents: read
+      id-token: write  # the keyless job asks GitHub for an OIDC token for archive.rmorie.com
 
   release:
     needs: test
