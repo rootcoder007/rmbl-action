@@ -1,8 +1,8 @@
 # The rmoriebricklayer image: R, the analysis packages, and the package installed (rmbl on PATH).
 # Pinned by digest; the tag is what Dependabot (docker, .github/dependabot.yml) tracks.
-# Digest from tag 1.0.0 = sha-664ba33 (rmorie-bricklayer 664ba33a, the 1.0.0 CRAN resubmission build), 2026-10-21.
-# To bump by hand: skopeo inspect --format '{{.Digest}}' docker://ghcr.io/rootcoder007/rmorie-bricklayer:1.0.0
-FROM ghcr.io/rootcoder007/rmorie-bricklayer:1.0.0@sha256:cbc8153ab55d71d723914ac841efbac31480a3c2ae9a08dbc9d8e1ab94a97e6d
+# Digest from tag 1.0.1 = sha-58c7f5a (rmorie-bricklayer 58c7f5ab, the 1.0.1 CRAN build), 2026-10-22.
+# To bump by hand: skopeo inspect --format '{{.Digest}}' docker://ghcr.io/rootcoder007/rmorie-bricklayer:1.0.1
+FROM ghcr.io/rootcoder007/rmorie-bricklayer:1.0.1@sha256:ad27562a802acaaeed7fd1cc510015f4635faedcb087cf894a6168dc9ae34b69
 
 COPY entrypoint.sh check.R /rmbl/
 COPY spec /rmbl/spec
