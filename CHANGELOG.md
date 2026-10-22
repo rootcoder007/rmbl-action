@@ -9,7 +9,7 @@ Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
   source the Wayback Machine refuses is saved there instead. Off by default.
 - Saving to the archive needs no secret: in a job allowed `id-token: write` the package uses GitHub's
   OIDC token, and the repository is the saver. New output `keyless` says whether the job had that permission.
-- Base image bumped to the rmoriebricklayer 1.0.1 build with `cpschk(archive =)`.
+- Base image bumped to the rmoriebricklayer 1.0.1 build 9f6d6603 with `cpschk(archive =)` and keyless saving.
 - Base image bumped to the rmoriebricklayer 1.0.0 CRAN resubmission build 07ed9f66 (package links
   to rmorie.com written as plain text; CRAN runs a fast core of the tests and skips re-computing the vignettes). An error raised during a footprint-measured check is now named after
   the check (`cpschk:`), not `co2fp:`. `spec/capsule.schema.json` now matches the package's schema (it
