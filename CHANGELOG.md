@@ -4,19 +4,11 @@ Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 
 ## 1.0.1 (2026-10-22)
 
-- New input `archive`: when a source cannot be fetched, `drift` and `refresh` fall back to the copy kept on
-  archive.rmorie.com with the pinned SHA-256 (public copies need no key), and with `wayback: true` a changed
-  source the Wayback Machine refuses is saved there instead. Off by default.
-- Saving to the archive needs no secret: in a job allowed `id-token: write` the package uses GitHub's
-  OIDC token, and the repository is the saver. New output `keyless` says whether the job had that permission.
-- Base image bumped to the rmoriebricklayer 1.0.1 build 9f6d6603 with `cpschk(archive =)` and keyless saving.
-- Base image bumped to the rmoriebricklayer 1.0.0 CRAN resubmission build 07ed9f66 (package links
-  to rmorie.com written as plain text; CRAN runs a fast core of the tests and skips re-computing the vignettes). An error raised during a footprint-measured check is now named after
-  the check (`cpschk:`), not `co2fp:`. `spec/capsule.schema.json` now matches the package's schema (it
-  gains `kind`, which marks a proof ledger).
-- Base image bumped to the rmoriebricklayer 1.0.0 release build ae81bf7a, the commit on CRAN
-  and in the rOpenSci submission (its dashboard report tests now pass on macOS, where the
-  report embeds PNG figures instead of SVG). No change to inputs, outputs or behaviour.
+- New input `archive`: when a source cannot be fetched, `drift` and `refresh` fall back to the copy kept on archive.rmorie.com with the pinned SHA-256 (public copies need no key), and with `wayback: true` a changed source the Wayback Machine refuses is saved there instead. Off by default.
+- Saving to the archive needs no secret: in a job allowed `id-token: write` the package uses GitHub's OIDC token, and the repository is the saver. New output `keyless` says whether the job had that permission.
+- Base image bumped to the rmoriebricklayer 1.0.2 release build (1052d5d7), which brings `cpschk(archive =)` and keyless saving.
+- Base image bumped earlier to the rmoriebricklayer 1.0.0 CRAN resubmission build 07ed9f66 (package links to rmorie.com written as plain text; CRAN runs a fast core of the tests and skips re-computing the vignettes). An error raised during a footprint-measured check is now named after the check (`cpschk:`), not `co2fp:`. `spec/capsule.schema.json` now matches the package's schema (it gains `kind`, which marks a proof ledger).
+- Base image bumped earlier to the rmoriebricklayer 1.0.0 release build ae81bf7a, the commit on CRAN and in the rOpenSci submission (its dashboard report tests now pass on macOS, where the report embeds PNG figures instead of SVG).
 
 ## 1.0.0 (2026-10-20)
 
