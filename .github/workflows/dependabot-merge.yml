@@ -1,0 +1,126 @@
+name: dependabot-merge
+
+# Merges Dependabot's pull requests by itself, so a new rmorie-bricklayer
+# image (the weekly security rebuild or a release) reaches @v1 users with no
+# one clicking. It runs after the test workflow finishes on a pull request,
+# in the context of main: no pull-request code is checked out or run here.
+# It merges only when
+#   - the pull request was opened by Dependabot and its head is the commit
+#     that was tested,
+#   - it changes nothing but the Dockerfile or files under .github/workflows,
+#   - every check on that commit finished and none failed.
+# The merge uses a token of the private rmbl-merge GitHub App (secrets
+# RMBL_MERGE_APP_ID and RMBL_MERGE_APP_KEY), the only bypass actor on the
+# main ruleset, and only for pull-request merges, never a direct push.
+# When the Dockerfile changed, a patch release follows (release.yml with
+# publish), which moves v1 to it.
+on:
+  workflow_run:  # zizmor: ignore[dangerous-triggers] no PR code is checked out
+    workflows: [test]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write       # merge the pull request
+      pull-requests: write  # merge and delete the branch
+      checks: read          # wait for every check on the commit
+      actions: write        # start release.yml after a Dockerfile bump
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+      BRANCH: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - name: Find the pull request and what it changes
+        id: pr
+        run: |
+          set -euo pipefail
+          pr=$(gh pr list -R "$REPO" --head "$BRANCH" --state open \
+            --json number,author,headRefOid \
+            --jq '.[] | select(.author.login == "app/dependabot"
+                             or .author.login == "dependabot[bot]")
+                      | select(.headRefOid == env.SHA) | .number')
+          if [ -z "$pr" ]; then
+            echo "No open Dependabot pull request at $SHA; nothing to do."
+            echo "number=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh pr diff "$pr" -R "$REPO" --name-only)
+          echo "$files"
+          if printf '%s\n' "$files" |
+            grep -vqE '^(Dockerfile|\.github/workflows/[^/]+\.ya?ml)$'; then
+            echo "::error::pull request $pr changes other files; review it."
+            exit 1
+          fi
+          image=false
+          if printf '%s\n' "$files" | grep -qx Dockerfile; then image=true; fi
+          echo "number=$pr" >> "$GITHUB_OUTPUT"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for every check on the commit
+        if: steps.pr.outputs.number != ''
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 80); do
+            runs=$(gh api --paginate \
+              "repos/$REPO/commits/$SHA/check-runs?per_page=100" \
+              --jq '.check_runs[] | "\(.status) \(.conclusion)"')
+            pending=$(printf '%s\n' "$runs" | grep -vc '^completed' || true)
+            bad=$(printf '%s\n' "$runs" | grep '^completed' |
+              grep -vcE ' (success|skipped|neutral)$' || true)
+            echo "pass $i: pending $pending, failed $bad"
+            if [ "$bad" -gt 0 ]; then
+              echo "::error::a check failed; leaving the pull request."
+              exit 1
+            fi
+            if [ "$pending" -eq 0 ]; then exit 0; fi
+            sleep 60
+          done
+          echo "::error::checks still running after 80 minutes."
+          exit 1
+
+      - name: Token of the merge app
+        if: steps.pr.outputs.number != ''
+        id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ secrets.RMBL_MERGE_APP_ID }}
+          private-key: ${{ secrets.RMBL_MERGE_APP_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Merge
+        if: steps.pr.outputs.number != ''
+        env:
+          PR: ${{ steps.pr.outputs.number }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          gh pr merge "$PR" -R "$REPO" --rebase --delete-branch \
+            --match-head-commit "$SHA"
+
+      - name: Release the new image as the next patch version
+        if: steps.pr.outputs.number != '' && steps.pr.outputs.image == 'true'
+        run: |
+          set -euo pipefail
+          last=$(gh release list -R "$REPO" --exclude-drafts --limit 50 \
+            --json tagName --jq '.[].tagName' |
+            grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          IFS=. read -r major minor patch <<< "${last#v}"
+          next="v$major.$minor.$((patch + 1))"
+          echo "releasing $next (after $last)"
+          gh workflow run release.yml -R "$REPO" --ref main \
+            -f version="$next" -f publish=true

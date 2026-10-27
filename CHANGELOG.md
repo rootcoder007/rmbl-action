@@ -2,6 +2,11 @@
 
 Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 
+## Unreleased
+
+- Base image bumped to the rmoriebricklayer 1.0.3 release build (6fefbaab): a Wolfi base with no known CVEs, SLH-DSA-SHA2-128s as the default signer, `cpsxvrf()` cross-checks with OpenSSL 3.5, and `tsstmp()` public timestamps.
+- New base images now arrive by themselves: Dependabot opens the bump, `dependabot-merge.yml` merges it once every check passes and cuts the next patch release, which moves `v1`.
+
 ## 1.0.1 (2026-10-22)
 
 - New input `archive`: when a source cannot be fetched, `drift` and `refresh` fall back to the copy kept on archive.rmorie.com with the pinned SHA-256 (public copies need no key), and with `wayback: true` a changed source the Wayback Machine refuses is saved there instead. Off by default.
