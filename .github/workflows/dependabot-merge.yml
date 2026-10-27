@@ -9,9 +9,11 @@ name: dependabot-merge
 #     that was tested,
 #   - it changes nothing but the Dockerfile or files under .github/workflows,
 #   - every check on that commit finished and none failed.
-# The merge uses a token of the private rmbl-merge GitHub App (secrets
-# RMBL_MERGE_APP_ID and RMBL_MERGE_APP_KEY), the only bypass actor on the
-# main ruleset, and only for pull-request merges, never a direct push.
+# The merge is a fast-forward push of the tested commit with the write
+# deploy key in RMBL_MERGE_DEPLOY_KEY (deploy keys are the main ruleset's
+# bypass; a personal repository cannot let an app bypass it). Nothing but
+# that commit, already checked, reaches main; a branch that is not a
+# fast-forward is sent back to Dependabot to rebase.
 # When the Dockerfile changed, a patch release follows (release.yml with
 # publish), which moves v1 to it.
 on:
@@ -35,8 +37,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
-      contents: write       # merge the pull request
-      pull-requests: write  # merge and delete the branch
+      contents: read        # the push uses the deploy key
+      pull-requests: write  # comment on the pull request
       checks: read          # wait for every check on the commit
       actions: write        # start release.yml after a Dockerfile bump
     env:
@@ -93,27 +95,40 @@ jobs:
           echo "::error::checks still running after 80 minutes."
           exit 1
 
-      - name: Token of the merge app
-        if: steps.pr.outputs.number != ''
-        id: app
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          app-id: ${{ secrets.RMBL_MERGE_APP_ID }}
-          private-key: ${{ secrets.RMBL_MERGE_APP_KEY }}
-          permission-contents: write
-          permission-pull-requests: write
-
-      - name: Merge
+      - name: Fast-forward main to the tested commit
         if: steps.pr.outputs.number != ''
         env:
           PR: ${{ steps.pr.outputs.number }}
-          GH_TOKEN: ${{ steps.app.outputs.token }}
+          DEPLOY_KEY: ${{ secrets.RMBL_MERGE_DEPLOY_KEY }}
         run: |
-          gh pr merge "$PR" -R "$REPO" --rebase --delete-branch \
-            --match-head-commit "$SHA"
+          set -euo pipefail
+          umask 077
+          key="$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$DEPLOY_KEY" > "$key"
+          trap 'rm -f "$key"' EXIT
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes"
+          git init -q repo && cd repo
+          git remote add origin "git@github.com:$REPO.git"
+          mkdir -p ~/.ssh
+          # GitHub's published host key (api.github.com/meta), not a scan
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" \
+            >> ~/.ssh/known_hosts
+          git fetch -q origin "+refs/heads/main:refs/remotes/origin/main" \
+            "+refs/heads/$BRANCH:refs/remotes/origin/pr"
+          test "$(git rev-parse origin/pr)" = "$SHA"
+          if ! git merge-base --is-ancestor origin/main "$SHA"; then
+            gh pr comment "$PR" -R "$REPO" --body "@dependabot rebase"
+            echo "not a fast-forward of main; asked Dependabot to rebase."
+            exit 0
+          fi
+          git push origin "$SHA:refs/heads/main"
+          gh pr comment "$PR" -R "$REPO" \
+            --body "Merged by dependabot-merge after every check passed."
+          echo "merged=true" >> "$GITHUB_OUTPUT"
+        id: merge
 
       - name: Release the new image as the next patch version
-        if: steps.pr.outputs.number != '' && steps.pr.outputs.image == 'true'
+        if: steps.merge.outputs.merged == 'true' && steps.pr.outputs.image == 'true'
         run: |
           set -euo pipefail
           last=$(gh release list -R "$REPO" --exclude-drafts --limit 50 \
