@@ -5,6 +5,7 @@ Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 ## Unreleased
 
 - Base image bumped to the rmoriebricklayer 1.0.3 release build (e026b54e): a Wolfi base with no known CVEs, SLH-DSA-SHA2-128s as the default signer, `cpsxvrf()` cross-checks with OpenSSL 3.5, and `tsstmp()` public timestamps.
+- Base image bumped to the rmoriebricklayer 1.0.3 build of 8bf9a019. `verify` and `report` now refuse a capsule whose source is a `file://` URL unless `allow-file: true`, as `drift` and `refresh` already did; set `allow-file: true` for capsules made from a file in the repository.
 - New base images now arrive by themselves: Dependabot opens the bump, `dependabot-merge.yml` merges it once every check passes and cuts the next patch release, which moves `v1`.
 
 ## 1.0.1 (2026-10-22)

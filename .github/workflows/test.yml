@@ -32,6 +32,7 @@ jobs:
         id: rmbl
         with:
           path: caps
+          allow-file: true
           mode: ${{ matrix.mode }}
       - name: Check outputs
         run: |
@@ -81,6 +82,7 @@ jobs:
         id: signed
         with:
           path: signed
+          allow-file: true
           public-key: ${{ env.PUB }}
       - run: test "${{ steps.signed.outputs.status }}" = ok
       - name: Signed bundle, another key
@@ -89,6 +91,7 @@ jobs:
         continue-on-error: true
         with:
           path: signed
+          allow-file: true
           public-key: "00ff"
       - run: |
           test "${{ steps.otherkey.outcome }}" = failure
@@ -176,6 +179,7 @@ jobs:
         id: after
         with:
           path: caps
+          allow-file: true
       - run: test "${{ steps.after.outputs.status }}" = ok
 
       - name: Tamper with the data
@@ -186,6 +190,7 @@ jobs:
         continue-on-error: true
         with:
           path: caps
+          allow-file: true
       - run: |
           test "${{ steps.tampered.outcome }}" = failure
           test "${{ steps.tampered.outputs.status }}" = error
@@ -195,12 +200,13 @@ jobs:
         id: tamperednever
         with:
           path: caps
+          allow-file: true
           fail-on: never
       - run: test "${{ steps.tamperednever.outputs.status }}" = error
       - name: Annotations name the file and the check
         run: |
           docker run --rm -v "$PWD:/github/workspace" -w /github/workspace -e GITHUB_WORKSPACE=/github/workspace \
-            -e RMBL_PATH=caps -e RMBL_FAIL_ON=never rmbl-local > annotations.txt
+            -e RMBL_PATH=caps -e RMBL_FAIL_ON=never -e RMBL_ALLOW_FILE=true rmbl-local > annotations.txt
           grep -q '^::error file=caps/one/data_provenance.json,title=rmbl provenance data_sha256::expected ' annotations.txt
 
       - name: A refused source URL is explained
@@ -272,6 +278,7 @@ jobs:
         id: mdiff
         with:
           path: mcaps
+          allow-file: true
           base-ref: rmbl-base
           comment: dry-run
           report: mdiff.md
@@ -288,6 +295,7 @@ jobs:
         id: notoken
         with:
           path: mcaps
+          allow-file: true
           comment: true
       - run: |
           test "${{ steps.notoken.outputs.comment }}" = skipped
@@ -298,6 +306,7 @@ jobs:
         id: msame
         with:
           path: mcaps
+          allow-file: true
           base-ref: rmbl-base
       - run: test "${{ steps.msame.outputs.manifest-changed }}" = false
 
@@ -701,6 +710,7 @@ jobs:
         id: rmbl
         with:
           path: caps
+          allow-file: true
           mode: verify
           archive: true
       - name: The container saw the OIDC request variables
