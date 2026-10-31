@@ -92,7 +92,7 @@ jobs:
         with:
           path: signed
           allow-file: true
-          public-key: "00ff"
+          public-key: "00ff00ff00ff00ff00ff00ff00ff00ff"
       - run: |
           test "${{ steps.otherkey.outcome }}" = failure
           test "${{ steps.otherkey.outputs.status }}" = error
