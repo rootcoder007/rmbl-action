@@ -2,9 +2,9 @@
 
 Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 
-## 1.0.5 (2026-11-01)
+## 1.1.0 (2026-11-01)
 
-- Base image bumped to the rmoriebricklayer 1.0.5 release build (d10163c4): the JSON reader works on R 4.1 to 4.4 again (records holding arrays, deep nesting), no connection is left open when a file cannot be read, and `arccap()` sends files larger than one upload in checked parts.
+- Base image bumped to the rmoriebricklayer 1.1.0 release build (ac3f047c). It carries the 1.0.5 fixes (the JSON reader works on R 4.1 to 4.4 again, records holding arrays and deep nesting; no connection is left open when a file cannot be read; `arccap()` sends files larger than one upload in checked parts) and the 1.1.0 one: a bundle check started by `unshare` from util-linux before 2.38 (Ubuntu 22.04) no longer waits out its whole time limit and reports a timeout.
 
 ## 1.0.4 (2026-10-31)
 
