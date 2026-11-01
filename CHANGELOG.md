@@ -2,6 +2,10 @@
 
 Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 
+## 1.0.5 (2026-11-01)
+
+- Base image bumped to the rmoriebricklayer 1.0.5 release build (d10163c4): the JSON reader works on R 4.1 to 4.4 again (records holding arrays, deep nesting), no connection is left open when a file cannot be read, and `arccap()` sends files larger than one upload in checked parts.
+
 ## 1.0.4 (2026-10-31)
 
 - Base image bumped to the rmoriebricklayer 1.0.3 release build (e026b54e): a Wolfi base with no known CVEs, SLH-DSA-SHA2-128s as the default signer, `cpsxvrf()` cross-checks with OpenSSL 3.5, and `tsstmp()` public timestamps.
