@@ -2,6 +2,10 @@
 
 Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 
+## 1.1.1 (2026-11-12)
+
+- Base image bumped to the rmoriebricklayer 1.1.1 release build (58249e4c). Four functions have new names there, and a capsule's schema names `anytab()` where it named `anltab()`; `rmbl migrate` rewrites a script's calls of the old names. The curated tables at data.rmorie.com need no sign-in, so a workflow that pulls one needs no key. The image is built on a Wolfi base whose glibc carries the fix for CVE-2026-84243.
+
 ## 1.1.0 (2026-11-01)
 
 - Base image bumped to the rmoriebricklayer 1.1.0 release build (ac3f047c). It carries the 1.0.5 fixes (the JSON reader works on R 4.1 to 4.4 again, records holding arrays and deep nesting; no connection is left open when a file cannot be read; `arccap()` sends files larger than one upload in checked parts) and the 1.1.0 one: a bundle check started by `unshare` from util-linux before 2.38 (Ubuntu 22.04) no longer waits out its whole time limit and reports a timeout.
