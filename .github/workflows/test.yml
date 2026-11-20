@@ -66,16 +66,19 @@ jobs:
           echo "PUB=$(cat signed/b.pub)" >> "$GITHUB_ENV"
           mkdir empty
 
+      # nothing to check fails the step since rmoriebricklayer 1.1.1
       - name: Empty directory
         uses: ./
         id: empty
+        continue-on-error: true
         with:
           path: empty
           report: empty.md
       - run: |
-          test "${{ steps.empty.outputs.status }}" = ok
+          test "${{ steps.empty.outcome }}" = failure
+          test "${{ steps.empty.outputs.status }}" = error
           test "${{ steps.empty.outputs.verified }}" = 0
-          grep -q 'No manifests found under `empty`' empty.md
+          grep -q 'No capsule found under `empty`' empty.md
 
       - name: Signed bundle, expected key
         uses: ./
@@ -497,7 +500,7 @@ jobs:
           go-version: stable
           cache: false
       - if: matrix.lang == 'rust'
-        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
         with:
           toolchain: stable
       - if: matrix.lang == 'zig'

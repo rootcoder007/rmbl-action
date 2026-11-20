@@ -437,7 +437,7 @@ Every failed check is also a workflow annotation: `::error file=<capsule file>` 
 line of a schema problem), and a `::warning` for each drift or warn row, so they show in the
 run header and the Files tab. The JSON also lists every check row under `checks`.
 
-When no capsule is found the report says "No manifests found under `<path>`".
+When no capsule is found under `path` the step fails (status `error`), and the report says "No capsule found under `<path>`: nothing was checked."
 
 ## Inputs
 

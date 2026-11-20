@@ -5,6 +5,7 @@ Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 ## 1.1.2 (2026-11-20)
 
 - Base image bumped to the latest rmoriebricklayer 1.1.1 build (e9a1c6a4). Reading JSON back, a factor whose data are not integers is refused with the package's own message on every version of R, the development version included.
+- A `path` under which no capsule is found fails the step (status `error`, "No capsule found under `<path>`: nothing was checked."), as rmoriebricklayer 1.1.1 does since its CRAN build: a folder with nothing to check used to pass. The README says so, and the test of the empty folder expects it.
 
 ## 1.1.1 (2026-11-12)
 
