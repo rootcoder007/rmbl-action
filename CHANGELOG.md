@@ -2,6 +2,10 @@
 
 Releases follow semantic versioning; `v1` always points to the latest `v1.x.y`.
 
+## 1.1.2 (2026-11-20)
+
+- Base image bumped to the latest rmoriebricklayer 1.1.1 build (e9a1c6a4). Reading JSON back, a factor whose data are not integers is refused with the package's own message on every version of R, the development version included.
+
 ## 1.1.1 (2026-11-12)
 
 - Base image bumped to the rmoriebricklayer 1.1.1 release build (58249e4c). Four functions have new names there, and a capsule's schema names `anytab()` where it named `anltab()`; `rmbl migrate` rewrites a script's calls of the old names. The curated tables at data.rmorie.com need no sign-in, so a workflow that pulls one needs no key. The image is built on a Wolfi base whose glibc carries the fix for CVE-2026-84243.
